@@ -1,7 +1,8 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include "lsm6dsm.h"
-LSM6DSM IMU;
+#include <Deneyap_SicaklikNemOlcer.h> // Deneyap_SicaklikNemOlcer kütüphane eklenmesi
+
+TempHum TempHum;
 
 const char* ssid = "Ağınızın Adı";
 const char* password = "Ağınızın Şifresi";
@@ -15,6 +16,10 @@ String nem = "";
 void setup()
 {
   Serial.begin(115200);
+  if(!TempHum.begin(0x70)){                        // begin(slaveAdress) fonksiyonu ile cihazların haberleşmesi başlatılması
+      delay(300);
+      Serial.println("I2C bağlantısı başarısız ");  // I2C bağlantısı başarısız olursa seri terminale yazdırılması
+   }
   pinMode(D8, INPUT);
   WiFi.begin(ssid, password);
   Serial.println("WiFi Baglaniyor");
@@ -50,7 +55,7 @@ void  veriGonder()
   HTTPClient http;
   http.begin(client, serverName);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-  String httpRequestData = "value1=" + sicaklik + "&value2=" + nem + "&value3=0";
+  String httpRequestData = "value1=" + sicaklik + "C&value2=" + nem + "&value3=0";
   int httpResponseCode = http.POST(httpRequestData);
   Serial.println("Gonderildi");
   http.end();
@@ -58,6 +63,6 @@ void  veriGonder()
 
 void  havaDurumu(void)
 {
-  sicaklik = IMU.readTempC();
-  nem = sicaklik;
+  sicaklik = TempHum.getTempValue();
+  nem = TempHum.getHumValue();
 }

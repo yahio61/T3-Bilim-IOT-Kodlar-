@@ -1,5 +1,8 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <Deneyap_MesafeOlcerIsikAlgilayici.h>                 // Deneyap_MesafeOlcerIsikAlgilayici.h kütüphanesi eklenmesi
+
+ProximityAL Yakinlik; 
 
 const char* ssid = "Ağınızın Adı";
 const char* password = "Ağınızın Şifresi";
@@ -8,7 +11,7 @@ const char* serverName = "http://maker.ifttt.com/trigger/hirsiz_alarmi/with/key/
 unsigned long lastTime = 0;
 // Zamanlayıcı 10000 ms olarak ayarlarlandığı için alarm 10 saniyede bir tetiklenebilir.
 unsigned long timerDelay = 10000;
-
+uint16_t yakinlikDegeri;
 void setup()
 {
   Serial.begin(115200);
@@ -22,6 +25,7 @@ void setup()
   Serial.println("");
   Serial.print("WiFi Agina Baglandi IP Addresi: ");
   Serial.println(WiFi.localIP());
+  Yakinlik.begin(0x23);
 }
 
 void loop() {
@@ -54,7 +58,13 @@ void  veriGonder()
 
 int  uzaklikOlc()
 {
-  int durum = digitalRead(D8);
-  durum = !durum;
+  int durum = 0;
+  yakinlikDegeri = Yakinlik.getPSvalue();
+  Serial.println(yakinlikDegeri);
+  delay(100);
+  if (yakinlikDegeri >1500)
+  {
+    durum = 1;
+  }
   return (durum);
 }
